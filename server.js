@@ -10,7 +10,7 @@ function displayLobby() {
   // 타이틀 텍스트
   console.log(
     chalk.cyan(
-      figlet.textSync("RL- Javascript", {
+      figlet.textSync("A D R - R P G", {
         font: "Standard",
         horizontalLayout: "default",
         verticalLayout: "default",
@@ -19,14 +19,19 @@ function displayLobby() {
   );
 
   // 상단 경계선
-  const line = chalk.magentaBright("=".repeat(50));
+  const line = chalk.magentaBright("=".repeat(60));
   console.log(line);
 
   // 게임 이름
-  console.log(chalk.yellowBright.bold("CLI 게임에 오신것을 환영합니다!"));
+  console.log(
+    chalk.yellowBright.bold(
+      "Attack Defense Run away ADR RPG가 당신을 환영합니다! "
+    )
+  );
 
   // 설명 텍스트
-  console.log(chalk.green("옵션을 선택해주세요."));
+  console.log();
+  console.log(chalk.green("당신의 선택지 입니다."));
   console.log();
 
   // 옵션들
@@ -44,7 +49,7 @@ function displayLobby() {
 
 // 유저 입력을 받아 처리하는 함수
 function handleUserInput() {
-  const choice = readlineSync.question("입력: ");
+  const choice = readlineSync.question("당신의 선택: ");
 
   switch (choice) {
     case "1":
@@ -68,7 +73,7 @@ function handleUserInput() {
       process.exit(0); // 게임 종료
       break;
     default:
-      console.log(chalk.red("올바른 선택을 하세요."));
+      console.log(chalk.red("1~4까지의 숫자만 유효합니다."));
       handleUserInput(); // 유효하지 않은 입력일 경우 다시 입력 받음
   }
 }

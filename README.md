@@ -1,8 +1,8 @@
 1. 프로젝트
 
-   프로젝트 이름: TEXT_RPG
+   프로젝트 이름: Attack Defense Run away ADR RPG
 
-장르: 로그라이크 텍스트RPG
+장르: 로그라이크 TEXT RPG
 
 2. 게임 설명
 
