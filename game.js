@@ -22,11 +22,11 @@ class Player {
     this.hp += healing;
   }
   //스테이지 클리어시 유저 체력+공격력+힐량 증가
-  userLevelUp(stage) {
-    this.maxHp += 100;
+  userLevelUp(stages) {
+    this.maxHp = 100 * stages;
     this.hp = this.maxHp;
-    this.heal += 10;
-    this.attackDmg += stage * 10;
+    this.heal = stages * 1.5;
+    this.attackDmg += stages * 10;
   }
   clearHp(next) {
     this.hp += next;
@@ -34,10 +34,10 @@ class Player {
 }
 
 class Monster {
-  constructor() {
-    this.maxHp = 100; //최대 체력
+  constructor(stages) {
+    this.maxHp = 100 * stages; //최대 체력
     this.hp = this.maxHp; //현재 체력
-    this.attackDmg = 20; //공격력
+    this.attackDmg = 20 * stages; //공격력
     this.stopTime = 0;
   }
   //몬스터가 피격시 데미지
@@ -54,11 +54,6 @@ class Monster {
     }
   }
   //스테이지 클리어시 몬스터 체력+ 데미지+
-  monsterLevelUp(stage) {
-    this.maxHp += 110;
-    this.hp = this.maxHp;
-    this.attackDmg += stage * 10;
-  }
 }
 
 function displayStatus(stage, player, monster) {
@@ -84,7 +79,7 @@ function displayStatus(stage, player, monster) {
 const battle = async (stage, player, monster) => {
   let logs = [];
 
-  while (player.hp > 0) {
+  while (player.hp > 0 && monster.hp > 0) {
     console.clear();
     displayStatus(stage, player, monster);
 
@@ -149,53 +144,54 @@ const battle = async (stage, player, monster) => {
         break;
     }
     //몬스터 행동 정의
-
-    if (monster.stopTime >= 1) {
-      //연막탄이 유지되는동안 몬스터가 행동을 멈춤
-      //턴이 지날떄마다 연막탄의 남은 턴수를 알려주고 1씩 빠짐
-      logs.push(
-        chalk.red(
-          `몬스터가 당신을 찾고있습니다.(${monster.stopTime - 1}턴 남음)`
-        )
-      );
-      monster.stopTime--;
-    } else {
-      switch (choice) {
-        case "1":
-          logs.push(
-            chalk.red(
-              `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
-            )
-          );
-          player.userHitDmg(monster.attackDmg);
-
-          break;
-        case "2":
-          if (monster.stopTime === 0) {
+    if (monster.hp > 0) {
+      if (monster.stopTime >= 1) {
+        //연막탄이 유지되는동안 몬스터가 행동을 멈춤
+        //턴이 지날떄마다 연막탄의 남은 턴수를 알려주고 1씩 빠짐
+        logs.push(
+          chalk.red(
+            `몬스터가 당신을 찾고있습니다.(${monster.stopTime - 1}턴 남음)`
+          )
+        );
+        monster.stopTime--;
+      } else {
+        switch (choice) {
+          case "1":
             logs.push(
               chalk.red(
-                `몬스터가 연막을 뚫고 당신을 공격합니다! ${monster.attackDmg}의 피해를 받습니다!`
+                `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
               )
             );
             player.userHitDmg(monster.attackDmg);
-          }
-          break;
-        case "3":
-          logs.push(
-            chalk.red(
-              `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
-            )
-          );
-          player.userHitDmg(monster.attackDmg);
-          break;
-        case "4":
-          logs.push(chalk.red(`몬스터가 공격이 실패하자 당황합니다!`));
 
-          break;
-        case "5":
-          logs.push(chalk.red(`몬스터가 당신을 비웃습니다...`));
+            break;
+          case "2":
+            if (monster.stopTime === 0) {
+              logs.push(
+                chalk.red(
+                  `몬스터가 연막을 뚫고 당신을 공격합니다! ${monster.attackDmg}의 피해를 받습니다!`
+                )
+              );
+              player.userHitDmg(monster.attackDmg);
+            }
+            break;
+          case "3":
+            logs.push(
+              chalk.red(
+                `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
+              )
+            );
+            player.userHitDmg(monster.attackDmg);
+            break;
+          case "4":
+            logs.push(chalk.red(`몬스터가 공격이 실패하자 당황합니다!`));
 
-          break;
+            break;
+          case "5":
+            logs.push(chalk.red(`몬스터가 당신을 비웃습니다...`));
+
+            break;
+        }
       }
     }
   }
@@ -207,21 +203,10 @@ export async function startGame() {
   let stage = 1;
 
   while (stage <= 10) {
-    const monster = new Monster();
+    const monster = new Monster(stage);
     await battle(stage, player, monster);
 
+    stage++;
     // 스테이지 클리어 및 게임 종료 조건
-    if (monster.maxHp <= 0) {
-      console.log(`${stage}스테이지를 클리어 했습니다!`);
-      //스테이지 클리어시 플레이어 레벨업
-      player.userLevelUp(stage);
-      stage++;
-      //스테이지 클리어시 몬스터 재생성
-      monster = new Monster();
-      monster.monsterLevelUp(stage);
-    } else if (player.hp < 1) {
-      console.log("당신은 죽었습니다...");
-      break;
-    }
   }
 }
