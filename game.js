@@ -1,6 +1,8 @@
 import chalk from "chalk";
 import readlineSync from "readline-sync";
+import figlet from "figlet";
 
+//플레이어 클래스
 class Player {
   constructor() {
     this.maxHp = 100; //최대 체력
@@ -10,6 +12,7 @@ class Player {
     this.run = 0;
     this.shield = 0;
     this.double = this.attackDmg;
+    this.turnCount = 0; //마지막 결과화면 랭킹을 위한 턴수
   }
   //플레이어가 피격시 데미지
   userHitDmg(dmg) {
@@ -18,6 +21,7 @@ class Player {
       this.hp = 0; // 체력이 음수가 되지 않도록 방지
     }
   }
+
   attack(monster) {
     // 플레이어의 공격
     monster.monsterHitDmg(this.attackDmg);
@@ -46,7 +50,7 @@ class Player {
 
     return this.run;
   }
-
+  //연속공격 선택할 경우의 확률
   doubleAttack() {
     const randomAttack = Math.floor(Math.random() * 3) + 1;
     this.double = randomAttack;
@@ -54,7 +58,7 @@ class Player {
     return;
   }
 }
-
+//몬스터 클래스
 class Monster {
   constructor(stages) {
     this.maxHp = 100 * stages; //최대 체력
@@ -76,7 +80,7 @@ class Monster {
     }
   }
 }
-
+//스테이지 / 플레이어 / 몬스터 정보창
 function displayStatus(stage, player, monster) {
   console.log(
     chalk.magentaBright(
@@ -99,7 +103,7 @@ function displayStatus(stage, player, monster) {
 
 const battle = async (stage, player, monster) => {
   let logs = [];
-
+  //플레이어와 몬스터의 모든 행동 로직
   while (player.hp > 0 && monster.hp > 0) {
     console.clear();
     displayStatus(stage, player, monster);
@@ -107,7 +111,7 @@ const battle = async (stage, player, monster) => {
     const userRunWaye = player.runAway();
     const doubleAtt = player.doubleAttack();
     logs.forEach((log) => console.log(log));
-
+    //선택지
     console.log(
       chalk.green(
         `\n1. 공격한다 2.연막탄을 던진다0~3. 3.회복한다(${player.heal}+) 4.방어한다(60%) 5.도망간다(50%) 6.연속공격(33%)`
@@ -120,12 +124,14 @@ const battle = async (stage, player, monster) => {
     //선택지 외의 값을 입력할경우 경고문을 띄워줌
     if (choice <= 6 && choice !== "") {
       logs.push(chalk.green(`${choice}를 선택하셨습니다!`));
+      player.turnCount++;
     } else {
       logs.push(chalk.red("당신이 하지 못하는 선택입니다!"));
     }
 
     //각 번호를 선택시 할 행동 정의
     //플레이어 행동 로직
+
     switch (choice) {
       case "1":
         logs.push(
@@ -278,13 +284,7 @@ const battle = async (stage, player, monster) => {
       }
     }
 
-    if (player.hp <= 0 && monster.hp <= 0) {
-      console.clear();
-      console.log(
-        chalk.red("플레이어와 몬스터 모두 쓰러졌습니다. 당신은 죽었습니다!")
-      );
-      break;
-    }
+    //플레이어가 몬스터를 죽일 경우 레벨업
     if (monster.hp <= 0) {
       stage++;
       player.userLevelUp(stage);
@@ -313,9 +313,40 @@ export async function startGame() {
     if (stage > 10) {
       console.clear();
       console.log(chalk.blue("축하합니다! 모든 스테이지를 클리어 하셨습니다!"));
+      console.log(
+        chalk.red(
+          figlet.textSync("C L E A R !", {
+            font: "Standard",
+            horizontalLayout: "default",
+            verticalLayout: "default",
+          })
+        )
+      );
       console.log();
+
       console.log(chalk.blue("랭킹"));
-      displayStatus(stage - 1, player, monster);
+      console.log();
+      console.log(chalk.red("1ST"));
+      displayStatus(
+        stage - 1,
+        player,
+        monster,
+        console.log(chalk.red`Total Choices${player.turnCount}`)
+      );
+      console.log(chalk.blue("2ND"));
+      displayStatus(
+        stage - 1,
+        player,
+        monster,
+        console.log(chalk.blue`Total Choices${player.turnCount + 10}`)
+      );
+      console.log(chalk.green("3RD"));
+      displayStatus(
+        stage - 1,
+        player,
+        monster,
+        console.log(chalk.green`Total Choices${player.turnCount + 15}`)
+      );
 
       break;
     }
