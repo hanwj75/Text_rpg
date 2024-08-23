@@ -11,8 +11,8 @@ class Player {
     this.attackDmg = 10;
     this.heal = 30;
     this.run = 0;
-    this.shield = 0;
-    this.double = 0;
+    this.shield = 0; //방어하기 확률 초기값
+    this.double = 0; //연속공격 확률 초기값
     this.turnCount = 0; //마지막 결과화면 랭킹을 위한 턴수
   }
   //플레이어가 피격시 데미지
@@ -35,7 +35,7 @@ class Player {
   userLevelUp(stages) {
     this.hp += stages * 100;
     this.heal = stages * 30;
-    this.attackDmg = 100 * stages;
+    this.attackDmg = 10 * stages;
   }
 
   //플레이어가 방패를 들었을때 막을 확률
