@@ -1,17 +1,18 @@
 import chalk from "chalk";
 import readlineSync from "readline-sync";
 import figlet from "figlet";
+import { start } from "./server.js";
 
 //플레이어 클래스
 class Player {
   constructor() {
     this.maxHp = 100; //최대 체력
     this.hp = this.maxHp; //현재 체력
-    this.attackDmg = 20;
+    this.attackDmg = 10;
     this.heal = 30;
     this.run = 0;
     this.shield = 0;
-    this.double = this.attackDmg;
+    this.double = 0;
     this.turnCount = 0; //마지막 결과화면 랭킹을 위한 턴수
   }
   //플레이어가 피격시 데미지
@@ -34,7 +35,7 @@ class Player {
   userLevelUp(stages) {
     this.hp += stages * 100;
     this.heal = stages * 30;
-    this.attackDmg = 20 * stages;
+    this.attackDmg = 100 * stages;
   }
 
   //플레이어가 방패를 들었을때 막을 확률
@@ -83,22 +84,16 @@ class Monster {
 //스테이지 / 플레이어 / 몬스터 정보창
 function displayStatus(stage, player, monster) {
   console.log(
-    chalk.magentaBright(
-      `\n====================== Current Status ========================`
-    )
+    chalk.magentaBright(`\n              （￣︶￣）↗ Status↖ (￣︶￣）`)
   );
   console.log(
-    chalk.cyanBright(`|| Stage: ${stage} |`) +
+    chalk.cyanBright(`| Stage: ${stage} |`) +
       chalk.yellowBright(
-        `| Player: HP:$${player.hp} DMG:${player.attackDmg} |`
+        `| Player: HP:${player.hp} DMG:${player.attackDmg} |`
       ) +
-      chalk.redBright(`| Monster: ${monster.hp} DMG:${monster.attackDmg} ||`)
+      chalk.redBright(`| Monster: ${monster.hp} DMG:${monster.attackDmg} |`)
   );
-  console.log(
-    chalk.magentaBright(
-      `==============================================================\n`
-    )
-  );
+  console.log(chalk.magentaBright(`(/≧▽≦)/  \n`));
 }
 
 const battle = async (stage, player, monster) => {
@@ -114,7 +109,9 @@ const battle = async (stage, player, monster) => {
     //선택지
     console.log(
       chalk.green(
-        `\n1. 공격한다 2.연막탄을 던진다0~3. 3.회복한다(${player.heal}+) 4.방어한다(60%) 5.도망간다(50%) 6.연속공격(33%)`
+        `\n1.${chalk.red(
+          "공격한다"
+        )} 2.연막탄을 던진다0~3. 3.회복한다(${player.heal}+) 4.방어한다(60%) 5.도망간다(50%) 6.연속공격(33%)`
       )
     );
     const choice = readlineSync.question("당신은");
@@ -183,19 +180,19 @@ const battle = async (stage, player, monster) => {
         break;
       case "6":
         if (player.double === 1) {
-          logs.push(chalk.yellow(`${player.double}!연속공격에 성공했습니다!`));
+          logs.push(chalk.yellow(`${player.double}! 연속공격에 성공했습니다!`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           monster.monsterHitDmg(player.attackDmg * 2);
         } else if (player.double === 2) {
-          logs.push(chalk.yellow(`${player.double}!연속공격에 성공했습니다!`));
+          logs.push(chalk.yellow(`${player.double}! 연속공격에 성공했습니다!`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
 
           monster.monsterHitDmg(player.attackDmg * 3);
         } else {
-          logs.push(chalk.red(`공격에 실패했습니다!`));
+          logs.push(chalk.red(`${player.double}! 공격에 실패했습니다!`));
         }
         break;
     }
@@ -241,10 +238,10 @@ const battle = async (stage, player, monster) => {
             break;
           case "4":
             if (player.shield >= 3 && player.shield <= 5) {
-              logs.push(chalk.yellow(` 몬스터가 공격이 막혀 당황합니다!`));
+              logs.push(chalk.red(` 몬스터가 공격이 막혀 당황합니다!`));
             } else {
               logs.push(
-                chalk.yellow(
+                chalk.red(
                   `몬스터의 공격이 방패를 파괴합니다!${monster.attackDmg}의 피해를 받습니다!`
                 )
               );
@@ -347,8 +344,15 @@ export async function startGame() {
         monster,
         console.log(chalk.green`Total Choices${player.turnCount + 15}`)
       );
-
-      break;
+      console.log();
+      console.log(chalk.black("처음으로 돌아가시겠습니까?"));
+      console.log(chalk.black("yes를 입력하면 처음으로 돌아갑니다."));
+      console.log(chalk.black("종료하시려면 Enter 를 눌러주세요"));
+      if (readlineSync.question() === "yes") {
+        start();
+      } else {
+        break;
+      }
     }
   }
 }
