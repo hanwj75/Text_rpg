@@ -16,7 +16,7 @@ class Player {
     this.turnCount = 0; //마지막 결과화면 랭킹을 위한 턴수
   }
   //플레이어가 피격시 데미지
-  userHitDmg(dmg) {
+  userTakeDmg(dmg) {
     this.hp -= dmg;
     if (this.hp < 0) {
       this.hp = 0; // 체력이 음수가 되지 않도록 방지
@@ -53,7 +53,7 @@ class Player {
   }
   //연속공격 선택할 경우의 확률
   doubleAttack() {
-    const randomAttack = Math.floor(Math.random() * 3) + 1;
+    const randomAttack = Math.floor(Math.random() * 5) + 1;
     this.double = randomAttack;
 
     return;
@@ -68,7 +68,7 @@ class Monster {
     this.stopTime = 0;
   }
   //몬스터가 피격시 데미지
-  monsterHitDmg(dmg) {
+  monsterTakeDmg(dmg) {
     this.hp -= dmg;
   }
   attack(user) {
@@ -111,7 +111,7 @@ const battle = async (stage, player, monster) => {
       chalk.green(
         `\n1.${chalk.red(
           "공격한다"
-        )} 2.연막탄을 던진다0~3. 3.회복한다(${player.heal}+) 4.방어한다(60%) 5.도망간다(50%) 6.연속공격(33%)`
+        )} 2.연막탄을 던진다0~3. 3.회복한다(${player.heal}+) 4.방어한다(60%) 5.도망간다(50%) 6.연속공격(80%)`
       )
     );
     const choice = readlineSync.question("당신은");
@@ -136,7 +136,7 @@ const battle = async (stage, player, monster) => {
             `당신이 몬스터에게${player.attackDmg}의 피해를 입힙니다.`
           )
         );
-        monster.monsterHitDmg(player.attackDmg);
+        monster.monsterTakeDmg(player.attackDmg);
 
         break;
       //플레이어가 2번의 선택지를 고르면 0~2의 랜덤한 값을가진 연막탄을 던짐
@@ -179,18 +179,18 @@ const battle = async (stage, player, monster) => {
         }
         break;
       case "6":
-        if (player.double === 1) {
+        if (player.double === 1 || player.double === 5) {
           logs.push(chalk.yellow(`${player.double}! 연속공격에 성공했습니다!`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
-          monster.monsterHitDmg(player.attackDmg * 2);
-        } else if (player.double === 2) {
+          monster.monsterTakeDmg(player.attackDmg * 2);
+        } else if (player.double === 2 || player.double === 4) {
           logs.push(chalk.yellow(`${player.double}! 연속공격에 성공했습니다!`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
           logs.push(chalk.yellow(`${player.attackDmg}의 피해를 입힙니다.`));
 
-          monster.monsterHitDmg(player.attackDmg * 3);
+          monster.monsterTakeDmg(player.attackDmg * 3);
         } else {
           logs.push(chalk.red(`${player.double}! 공격에 실패했습니다!`));
         }
@@ -215,7 +215,7 @@ const battle = async (stage, player, monster) => {
                 `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
               )
             );
-            player.userHitDmg(monster.attackDmg);
+            player.userTakeDmg(monster.attackDmg);
 
             break;
           case "2":
@@ -225,7 +225,7 @@ const battle = async (stage, player, monster) => {
                   `몬스터가 연막을 뚫고 당신을 공격합니다! ${monster.attackDmg}의 피해를 받습니다!`
                 )
               );
-              player.userHitDmg(monster.attackDmg);
+              player.userTakeDmg(monster.attackDmg);
             }
             break;
           case "3":
@@ -234,7 +234,7 @@ const battle = async (stage, player, monster) => {
                 `몬스터가 공격합니다! ${monster.attackDmg}의 피해를 받습니다.`
               )
             );
-            player.userHitDmg(monster.attackDmg);
+            player.userTakeDmg(monster.attackDmg);
             break;
           case "4":
             if (player.shield >= 3 && player.shield <= 5) {
@@ -245,7 +245,7 @@ const battle = async (stage, player, monster) => {
                   `몬스터의 공격이 방패를 파괴합니다!${monster.attackDmg}의 피해를 받습니다!`
                 )
               );
-              player.userHitDmg(monster.attackDmg);
+              player.userTakeDmg(monster.attackDmg);
             }
             break;
           case "5":
@@ -259,14 +259,14 @@ const battle = async (stage, player, monster) => {
                   `몬스터가 도망가는 당신에게 ${monster.attackDmg}피해를 입힙니다`
                 )
               );
-              player.userHitDmg(monster.attackDmg);
+              player.userTakeDmg(monster.attackDmg);
             }
 
             break;
           case "6":
-            if (player.double === 1) {
+            if (player.double === 1 || player.double === 5) {
               logs.push(chalk.red(`몬스터가 막대한 피해를 입습니다!`));
-            } else if (player.double === 2) {
+            } else if (player.double === 2 || player.double === 4) {
               logs.push(chalk.red(`몬스터가 절대한 피해를 입습니다!`));
             } else {
               logs.push(
@@ -274,7 +274,7 @@ const battle = async (stage, player, monster) => {
                   `몬스터가 당신에게 ${monster.attackDmg * 3}의 절대한 피해를 입힙니다! `
                 )
               );
-              player.userHitDmg(monster.attackDmg * 3);
+              player.userTakeDmg(monster.attackDmg * 3);
             }
             break;
         }
